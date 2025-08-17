@@ -1,157 +1,780 @@
 {% extends "base.html" %}
 
+{% block extra_css %}
+<style>
+    .dashboard-header {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--border-color);
+        border-radius: 1rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .dashboard-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--accent-blue), var(--accent-green), var(--accent-purple));
+        background-size: 200% 100%;
+        animation: shimmer 4s ease-in-out infinite;
+    }
+
+    .stat-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--border-color);
+        border-radius: 1.25rem;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+        position: relative;
+        height: 140px;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at center, rgba(59, 130, 246, 0.1), transparent 70%);
+        opacity: 0;
+        transition: opacity 0.4s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        border-color: rgba(59, 130, 246, 0.5);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 30px rgba(59, 130, 246, 0.2);
+    }
+
+    .stat-card:hover::before {
+        opacity: 1;
+    }
+
+    .stat-card:nth-child(1):hover { border-color: rgba(59, 130, 246, 0.5); }
+    .stat-card:nth-child(2):hover { border-color: rgba(16, 185, 129, 0.5); }
+    .stat-card:nth-child(3):hover { border-color: rgba(245, 158, 11, 0.5); }
+    .stat-card:nth-child(4):hover { border-color: rgba(139, 92, 246, 0.5); }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-icon::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transform: translateX(-100%);
+        transition: transform 0.6s ease;
+    }
+
+    .stat-card:hover .stat-icon::before {
+        transform: translateX(100%);
+    }
+
+    .stat-icon-primary { background: linear-gradient(135deg, var(--accent-blue), #2563eb); }
+    .stat-icon-success { background: linear-gradient(135deg, var(--accent-green), #059669); }
+    .stat-icon-warning { background: linear-gradient(135deg, var(--accent-orange), #d97706); }
+    .stat-icon-purple { background: linear-gradient(135deg, var(--accent-purple), #7c3aed); }
+
+    .stat-number {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--text-primary), var(--accent-blue));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1;
+        margin: 0.5rem 0;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-secondary);
+        margin: 0;
+    }
+
+    .chart-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--border-color);
+        border-radius: 1.25rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .chart-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--accent-blue), var(--accent-green));
+    }
+
+    .chart-container {
+        position: relative;
+        height: 400px;
+        padding: 1rem;
+    }
+
+    .upcoming-releases-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--border-color);
+        border-radius: 1.25rem;
+    }
+
+    .release-item {
+        background: var(--accent-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 0.75rem;
+        padding: 1rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .release-item::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: linear-gradient(180deg, var(--accent-orange), var(--accent-red));
+    }
+
+    .release-item:hover {
+        transform: translateX(5px);
+        background: var(--secondary-bg);
+        border-color: var(--accent-orange);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .system-status {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--border-color);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .status-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--accent-green);
+        box-shadow: 0 0 15px var(--accent-green);
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.7; transform: scale(1.1); }
+    }
+
+    .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .quick-action-btn {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--border-color);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-decoration: none;
+        color: var(--text-primary);
+        transition: all 0.3s ease;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .quick-action-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, var(--accent-blue), var(--accent-green));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .quick-action-btn:hover {
+        transform: translateY(-5px);
+        color: var(--text-primary);
+        text-decoration: none;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+    }
+
+    .quick-action-btn:hover::before {
+        opacity: 0.1;
+    }
+
+    .quick-action-icon {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, var(--accent-blue), var(--accent-green));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .weather-widget {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--border-color);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-align: center;
+    }
+
+    @media (max-width: 768px) {
+        .stat-number { font-size: 2rem; }
+        .chart-container { height: 300px; }
+        .quick-actions { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">SYSTEM DASHBOARD</h1>
+<div class="dashboard-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="page-title mb-2">SYSTEM DASHBOARD</h1>
+            <p class="text-muted mb-0">
+                <i class="fas fa-calendar-alt me-2"></i>
+                <span id="currentDateTime"></span>
+            </p>
+        </div>
+        <div class="d-flex align-items-center">
+            <div class="status-indicator me-2"></div>
+            <span class="small text-success fw-bold">System Online</span>
+        </div>
+    </div>
 </div>
 
-<!-- Stat Cards Section -->
 <div class="row g-4 mb-4">
-    <div class="col-md-3">
-        <div class="card text-bg-secondary h-100">
-            <div class="card-body d-flex flex-column justify-content-between">
+    <div class="col-md-6 col-xl-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center justify-content-between">
                 <div>
-                    <h6 class="card-title text-uppercase text-white-50">Active Inmates</h6>
-                    <h1 class="display-4 fw-bold">{{ active_inmates | default(0) }}</h1>
+                    <div class="stat-icon stat-icon-primary">
+                        <i class="fas fa-user-lock fa-2x text-white"></i>
+                    </div>
                 </div>
                 <div class="text-end">
-                    <i class="fas fa-user-lock fa-2x text-white-50"></i>
+                    <p class="stat-label">Active Inmates</p>
+                    <div class="stat-number">{{ active_inmates | default(0) }}</div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card text-bg-secondary h-100">
-            <div class="card-body d-flex flex-column justify-content-between">
+    
+    <div class="col-md-6 col-xl-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center justify-content-between">
                 <div>
-                    <h6 class="card-title text-uppercase text-white-50">Released Inmates</h6>
-                    <h1 class="display-4 fw-bold">{{ released_inmates | default(0) }}</h1>
+                    <div class="stat-icon stat-icon-success">
+                        <i class="fas fa-user-check fa-2x text-white"></i>
+                    </div>
                 </div>
                 <div class="text-end">
-                    <i class="fas fa-user-check fa-2x text-white-50"></i>
+                    <p class="stat-label">Released Inmates</p>
+                    <div class="stat-number">{{ released_inmates | default(0) }}</div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card text-bg-secondary h-100">
-            <div class="card-body d-flex flex-column justify-content-between">
+    
+    <div class="col-md-6 col-xl-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center justify-content-between">
                 <div>
-                    <h6 class="card-title text-uppercase text-white-50">Today's Visitors</h6>
-                    <h1 class="display-4 fw-bold">{{ today_visitors | default(0) }}</h1>
+                    <div class="stat-icon stat-icon-warning">
+                        <i class="fas fa-users fa-2x text-white"></i>
+                    </div>
                 </div>
                 <div class="text-end">
-                    <i class="fas fa-users fa-2x text-white-50"></i>
+                    <p class="stat-label">Today's Visitors</p>
+                    <div class="stat-number">{{ today_visitors | default(0) }}</div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card text-bg-secondary h-100">
-            <div class="card-body d-flex flex-column justify-content-between">
+    
+    <div class="col-md-6 col-xl-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center justify-content-between">
                 <div>
-                    <h6 class="card-title text-uppercase text-white-50">Upcoming Releases</h6>
-                    <h1 class="display-4 fw-bold">{{ upcoming_releases | length }}</h1>
+                    <div class="stat-icon stat-icon-purple">
+                        <i class="fas fa-calendar-alt fa-2x text-white"></i>
+                    </div>
                 </div>
                 <div class="text-end">
-                    <i class="fas fa-calendar-alt fa-2x text-white-50"></i>
+                    <p class="stat-label">Upcoming Releases</p>
+                    <div class="stat-number">{{ upcoming_releases | length }}</div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Charts and Lists Section -->
-<div class="row g-4">
+<div class="row g-4 mb-4">
     <div class="col-lg-8">
-        <div class="card bg-dark border-secondary h-100">
-            <div class="card-header">
-                <h5 class="card-title"><i class="fas fa-chart-line me-2"></i>Monthly Admissions</h5>
+        <div class="card chart-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="card-title mb-1">
+                        <i class="fas fa-chart-line me-2 text-primary"></i>
+                        Monthly Admissions Trend
+                    </h5>
+                    <small class="text-muted">Performance over the last 12 months</small>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-filter me-1"></i>Filter
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-dark">
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-calendar me-2"></i>Last 6 months</a></li>
+                        <li><a class="dropdown-item active" href="#"><i class="fas fa-calendar me-2"></i>Last 12 months</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-calendar me-2"></i>Last 2 years</a></li>
+                    </ul>
+                </div>
             </div>
             <div class="card-body">
-                <canvas id="admissionsChart"></canvas>
+                <div class="chart-container">
+                    <canvas id="admissionsChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
+    
     <div class="col-lg-4">
-        <div class="card bg-dark border-secondary mb-4">
+        <div class="card upcoming-releases-card">
             <div class="card-header">
-                <h5 class="card-title"><i class="fas fa-calendar-check me-2"></i>Upcoming Releases (Next 7 Days)</h5>
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-calendar-check me-2 text-warning"></i>
+                    Upcoming Releases
+                </h5>
+                <small class="text-muted">Next 7 days</small>
             </div>
-            <div class="list-group list-group-flush">
+            <div class="card-body p-0" style="max-height: 400px; overflow-y: auto;">
                 {% if upcoming_releases %}
                     {% for inmate in upcoming_releases %}
-                    <div class="list-group-item list-group-item-dark d-flex justify-content-between align-items-center">
-                        {{ inmate[0] }}
-                        <span class="badge bg-warning text-dark">{{ inmate[1].strftime('%b %d') }}</span>
+                    <div class="release-item m-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1 fw-bold">{{ inmate.name }}</h6>
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    {{ inmate.release_date.strftime('%b %d, %Y') }}
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-warning text-dark">
+                                    {# --- START OF THE FIX --- #}
+                                    {# The complex calculation is removed and replaced with the pre-calculated value #}
+                                    {% if inmate.days_left == 0 %}Today
+                                    {% elif inmate.days_left == 1 %}Tomorrow
+                                    {% else %}{{ inmate.days_left }} days
+                                    {% endif %}
+                                    {# --- END OF THE FIX --- #}
+                                </span>
+                            </div>
+                        </div>
                     </div>
                     {% endfor %}
                 {% else %}
-                    <div class="list-group-item list-group-item-dark text-muted">No upcoming releases.</div>
-                {% endif %}
-            </div>
-        </div>
-        <div class="card bg-dark border-secondary">
-            <div class="card-header">
-                <h5 class="card-title"><i class="fas fa-exclamation-triangle me-2"></i>Recent Alerts</h5>
-            </div>
-            <div class="list-group list-group-flush">
-                {% if recent_alerts %}
-                    {% for alert in recent_alerts %}
-                    <div class="list-group-item list-group-item-dark text-danger">
-                        <i class="fas fa-exclamation-circle me-2"></i>{{ alert }}
+                    <div class="text-center py-5">
+                        <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                        <p class="text-muted mb-0">No upcoming releases</p>
                     </div>
-                    {% endfor %}
-                {% else %}
-                     <div class="list-group-item list-group-item-dark text-muted">No recent alerts.</div>
                 {% endif %}
             </div>
         </div>
     </div>
 </div>
+
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-bolt me-2 text-warning"></i>
+                    Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="quick-actions">
+                    <a href="/inmates" class="quick-action-btn">
+                        <div class="quick-action-icon">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <h6 class="mb-1">Add Inmate</h6>
+                        <small class="text-muted">Register new inmate</small>
+                    </a>
+                    
+                    <a href="/assign_cell" class="quick-action-btn">
+                        <div class="quick-action-icon">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                        <h6 class="mb-1">Assign Cell</h6>
+                        <small class="text-muted">Manage cell assignments</small>
+                    </a>
+                    
+                    <a href="/manage_visits" class="quick-action-btn">
+                        <div class="quick-action-icon">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                        <h6 class="mb-1">Visit Requests</h6>
+                        <small class="text-muted">Review pending visits</small>
+                    </a>
+                    
+                    <a href="/search" class="quick-action-btn">
+                        <div class="quick-action-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <h6 class="mb-1">Search</h6>
+                        <small class="text-muted">Find inmate records</small>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="system-status">
+    <div class="row g-3">
+        <div class="col-md-3">
+            <div class="d-flex align-items-center">
+                <div class="status-indicator me-3"></div>
+                <div>
+                    <div class="fw-bold">Database</div>
+                    <small class="text-success">Connected</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="d-flex align-items-center">
+                <div class="status-indicator me-3"></div>
+                <div>
+                    <div class="fw-bold">Security</div>
+                    <small class="text-success">Active</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="d-flex align-items-center">
+                <div class="status-indicator me-3"></div>
+                <div>
+                    <div class="fw-bold">Backup</div>
+                    <small class="text-success">Updated</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="d-flex align-items-center">
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="text-center mt-5 pt-4 border-top border-secondary">
+    <p class="text-muted mb-2">
+        &copy; <span id="copyrightYear"></span> কারাগার Management System. All Rights Reserved.
+    </p>
+    <p class="small text-muted">
+        <strong>Developed by Shafa</strong> | 
+        <i class="fas fa-map-marker-alt me-1"></i>Dhaka, Bangladesh |
+    </p>
+</footer>
 {% endblock %}
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Set current year
+    document.getElementById('copyrightYear').textContent = new Date().getFullYear();
+    
+    // Update current date and time
+    function updateDateTime() {
+        const now = new Date();
+        const options = { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        };
+        document.getElementById('currentDateTime').textContent = now.toLocaleDateString('en-US', options);
+    }
+    
+    updateDateTime();
+    setInterval(updateDateTime, 60000); // Update every minute
+
+    // Enhanced Chart Configuration
     const ctx = document.getElementById('admissionsChart');
+    const chartLabels = {{ chart_labels | tojson }};
+    const chartValues = {{ chart_values | tojson }};
+
     if (ctx) {
+        const chartCtx = ctx.getContext('2d');
+        
+        // Create gradient
+        const gradient = chartCtx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(59, 130, 246, 0.4)');
+        gradient.addColorStop(0.5, 'rgba(59, 130, 246, 0.2)');
+        gradient.addColorStop(1, 'rgba(59, 130, 246, 0.05)');
+
+        // Create border gradient
+        const borderGradient = chartCtx.createLinearGradient(0, 0, ctx.width, 0);
+        borderGradient.addColorStop(0, '#3b82f6');
+        borderGradient.addColorStop(0.5, '#10b981');
+        borderGradient.addColorStop(1, '#8b5cf6');
+
         new Chart(ctx, {
             type: 'line',
             data: {
-                labels: JSON.parse('{{ chart_labels | tojson | safe }}'),
+                labels: chartLabels,
                 datasets: [{
-                    label: 'Inmate Admissions',
-                    data: JSON.parse('{{ chart_values | tojson | safe }}'),
-                    borderColor: 'rgba(255, 193, 7, 1)',
-                    backgroundColor: 'rgba(255, 193, 7, 0.2)',
+                    label: 'Monthly Admissions',
+                    data: chartValues,
+                    backgroundColor: gradient,
+                    borderColor: '#3b82f6',
+                    borderWidth: 3,
+                    pointBackgroundColor: '#ffffff',
+                    pointBorderColor: '#3b82f6',
+                    pointBorderWidth: 3,
+                    pointRadius: 6,
+                    pointHoverRadius: 8,
+                    pointHoverBackgroundColor: '#3b82f6',
+                    pointHoverBorderColor: '#ffffff',
                     fill: true,
-                    tension: 0.3
+                    tension: 0.4,
+                    shadow: true
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
                 plugins: {
-                    legend: {
-                        display: false
+                    legend: { 
+                        display: false 
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(26, 31, 46, 0.95)',
+                        titleColor: '#e2e8f0',
+                        bodyColor: '#94a3b8',
+                        borderColor: '#364152',
+                        borderWidth: 1,
+                        cornerRadius: 8,
+                        displayColors: false,
+                        callbacks: {
+                            title: function(context) {
+                                return `Month: ${context[0].label}`;
+                            },
+                            label: function(context) {
+                                return `Admissions: ${context.parsed.y}`;
+                            }
+                        }
                     }
                 },
                 scales: {
                     x: {
-                        ticks: { color: '#c9d1d9' },
-                        grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        ticks: { 
+                            color: '#94a3b8',
+                            font: { family: 'Inter', size: 12 }
+                        },
+                        grid: { 
+                            color: 'rgba(255, 255, 255, 0.05)',
+                            drawBorder: false
+                        }
                     },
                     y: {
-                        ticks: { color: '#c9d1d9' },
-                        grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        ticks: { 
+                            color: '#94a3b8',
+                            stepSize: 1,
+                            font: { family: 'Inter', size: 12 },
+                            callback: function(value) {
+                                return Number.isInteger(value) ? value : '';
+                            }
+                        },
+                        grid: { 
+                            color: 'rgba(255, 255, 255, 0.1)',
+                            drawBorder: false
+                        },
+                        beginAtZero: true
                     }
+                },
+                elements: {
+                    point: {
+                        hoverBorderWidth: 4
+                    }
+                },
+                animation: {
+                    duration: 2000,
+                    easing: 'easeInOutCubic'
                 }
-            }
+            },
+            plugins: [{
+                beforeDraw: function(chart) {
+                    const ctx = chart.ctx;
+                    ctx.save();
+                    ctx.shadowColor = 'rgba(59, 130, 246, 0.3)';
+                    ctx.shadowBlur = 10;
+                    ctx.shadowOffsetX = 0;
+                    ctx.shadowOffsetY = 5;
+                }
+            }]
         });
     }
+
+    // Animate stat numbers on page load
+    function animateNumbers() {
+        const statNumbers = document.querySelectorAll('.stat-number');
+        
+        statNumbers.forEach(element => {
+            const target = parseInt(element.textContent);
+            const duration = 2000;
+            const step = target / (duration / 16);
+            let current = 0;
+            
+            const timer = setInterval(() => {
+                current += step;
+                if (current >= target) {
+                    current = target;
+                    clearInterval(timer);
+                }
+                element.textContent = Math.floor(current);
+            }, 16);
+        });
+    }
+
+    // Trigger animations
+    setTimeout(animateNumbers, 500);
+
+    // Add subtle animations to cards
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.animation = 'slideInUp 0.6s ease-out forwards';
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.card').forEach(card => {
+        observer.observe(card);
+    });
+
+    // Real-time updates simulation
+    setInterval(() => {
+        const indicators = document.querySelectorAll('.status-indicator');
+        indicators.forEach(indicator => {
+            indicator.style.animation = 'none';
+            setTimeout(() => {
+                indicator.style.animation = 'pulse 2s infinite';
+            }, 50);
+        });
+    }, 10000);
+
+    // Enhanced hover effects for stat cards
+    document.querySelectorAll('.stat-card').forEach((card, index) => {
+        card.addEventListener('mouseenter', function() {
+            // Add subtle glow effect
+            const colors = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
+            this.style.boxShadow = `0 20px 40px rgba(0, 0, 0, 0.3), 0 0 30px ${colors[index]}40`;
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.boxShadow = '';
+        });
+    });
 });
+
+// Add some interactivity to quick action buttons
+document.querySelectorAll('.quick-action-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        // Create ripple effect
+        const ripple = document.createElement('div');
+        const rect = this.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height);
+        const x = e.clientX - rect.left - size / 2;
+        const y = e.clientY - rect.top - size / 2;
+        
+        ripple.style.cssText = `
+            position: absolute;
+            width: ${size}px;
+            height: ${size}px;
+            left: ${x}px;
+            top: ${y}px;
+            background: rgba(59, 130, 246, 0.3);
+            border-radius: 50%;
+            transform: scale(0);
+            animation: ripple 0.6s ease-out;
+            pointer-events: none;
+        `;
+        
+        this.appendChild(ripple);
+        
+        setTimeout(() => {
+            ripple.remove();
+        }, 600);
+    });
+});
+
+// Add ripple animation keyframes
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes ripple {
+        to {
+            transform: scale(2);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(style);
 </script>
 {% endblock %}
-
