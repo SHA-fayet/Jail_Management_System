@@ -1,164 +1,468 @@
 {% extends "base.html" %}
 
+{% block extra_css %}
+<style>
+    /* --- LAYOUT FIX: Replaced table with a CSS Flexbox grid for perfect alignment --- */
+    .inmate-list, .inmate-list-header, .inmate-row-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+    }
+
+    .inmate-list-header {
+        background: var(--accent-bg);
+        border: none;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+        color: var(--text-secondary);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .inmate-row-item {
+        border-bottom: 1px solid rgba(54, 65, 82, 0.3);
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .inmate-row-item::before {
+        content: '';
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        width: 3px;
+        background: transparent;
+        transition: all 0.3s ease;
+    }
+
+    .inmate-row-item:hover {
+        background: rgba(59, 130, 246, 0.1);
+        transform: translateX(5px);
+    }
+    
+    .inmate-row-item:hover::before {
+        background: linear-gradient(180deg, var(--accent-blue), var(--accent-green));
+    }
+
+    /* Define column widths */
+    .col-details { flex: 0 0 25%; min-width: 200px; padding-right: 1rem; }
+    .col-crime   { flex: 0 0 20%; min-width: 180px; padding-right: 1rem; }
+    .col-dates   { flex: 0 0 18%; min-width: 160px; padding-right: 1rem; }
+    .col-status  { flex: 0 0 12%; min-width: 110px; justify-content: center; text-align: center; }
+    .col-cell    { flex: 0 0 10%; min-width: 90px; justify-content: center; text-align: center; }
+    .col-actions { flex: 0 0 15%; min-width: 140px; justify-content: center; text-align: center; }
+    /* --- END OF LAYOUT FIX --- */
+
+    .inmates-header {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--border-color);
+        border-radius: 1rem;
+        padding: 1.5rem 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .inmates-table-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--border-color);
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: var(--shadow-large);
+    }
+
+    .table-header {
+        background: linear-gradient(135deg, var(--accent-bg), var(--secondary-bg));
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .inmate-avatar {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--border-color);
+        transition: all 0.3s ease;
+    }
+
+    .inmate-avatar:hover {
+        border-color: var(--accent-blue);
+        transform: scale(1.1);
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5rem 1rem;
+        border-radius: 2rem;
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        white-space: nowrap;
+    }
+
+    .status-active {
+        background: linear-gradient(135deg, var(--accent-green), #059669);
+        color: white;
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    }
+
+    .status-released {
+        background: linear-gradient(135deg, var(--text-secondary), #64748b);
+        color: white;
+        box-shadow: 0 4px 15px rgba(148, 163, 184, 0.3);
+    }
+
+    .cell-badge {
+        background: var(--accent-bg);
+        color: var(--accent-blue);
+        padding: 0.4rem 0.8rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .action-btn {
+        width: 35px;
+        height: 35px;
+        border-radius: 0.5rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 0.25rem;
+        transition: all 0.3s ease;
+    }
+    
+    .search-section, .stats-row {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--border-color);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .mini-stat {
+        text-align: center;
+        padding: 1rem;
+        border-radius: 0.75rem;
+        background: var(--accent-bg);
+        border: 1px solid var(--border-color);
+        transition: all 0.3s ease;
+    }
+
+    .mini-stat:hover {
+        transform: translateY(-3px);
+        background: var(--secondary-bg);
+        border-color: var(--accent-blue);
+    }
+
+    .mini-stat-number {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--accent-blue);
+        margin: 0;
+    }
+
+    .mini-stat-label {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        margin: 0;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--text-secondary);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Inmate Records</h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
+<div class="inmates-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="page-title mb-2">Inmate Records</h1>
+            <p class="text-muted mb-0">Comprehensive inmate management and tracking</p>
+        </div>
         <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addInmateModal">
             <i class="fas fa-plus me-2"></i>Add New Inmate
         </button>
     </div>
 </div>
 
-<div class="card bg-dark border-secondary">
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-dark table-hover align-middle">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Crime</th>
-                        <th>Admission Date</th>
-                        <th>Release Date</th>
-                        <th>Status</th>
-                        <th>Cell</th>
-                        <th class="text-end">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for inmate in inmates %}
-                        {% if inmate.status == 'Active' %}
-                        <tr>
-                            <td>{{ inmate.name }}</td>
-                            <td>{{ inmate.crime }}</td>
-                            <td>{{ inmate.admission_date.strftime('%Y-%m-%d') }}</td>
-                            <td>{{ inmate.release_date.strftime('%Y-%m-%d') }}</td>
-                            <td><span class="badge bg-success">{{ inmate.status }}</span></td>
-                            <td>{{ inmate.cell_number or 'N/A' }}</td>
-                            <td class="text-end">
-                                <button class="btn btn-sm btn-outline-warning editBtn"
-                                        data-id="{{ inmate.id }}"
-                                        data-name="{{ inmate.name }}"
-                                        data-crime="{{ inmate.crime }}"
-                                        data-sentence="{{ inmate.sentence }}"
-                                        data-sentence_duration="{{ inmate.sentence_duration }}"
-                                        data-release="{{ inmate.release_date.strftime('%Y-%m-%d') }}"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#editInmateModal">
-                                    <i class="fas fa-pencil-alt"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger deleteBtn"
-                                        data-id="{{ inmate.id }}"
-                                        data-name="{{ inmate.name }}">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </td>
-                        </tr>
-                        {% endif %}
-                    {% endfor %}
-                </tbody>
-            </table>
+<div class="stats-row">
+    <div class="row g-3">
+        <div class="col-md-3">
+            <div class="mini-stat">
+                <p class="mini-stat-number">{{ inmates|selectattr("status", "equalto", "Active")|list|length }}</p>
+                <p class="mini-stat-label">Active Inmates</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="mini-stat">
+                <p class="mini-stat-number">{{ inmates|selectattr("status", "equalto", "Released")|list|length }}</p>
+                <p class="mini-stat-label">Released</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="mini-stat">
+                <p class="mini-stat-number">{{ inmates|selectattr("cell_number", "none")|list|length }}</p>
+                <p class="mini-stat-label">Unassigned Cells</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="mini-stat">
+                <p class="mini-stat-number">{{ inmates|length }}</p>
+                <p class="mini-stat-label">Total Records</p>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Add Inmate Modal -->
+<div class="search-section">
+    <div class="row g-3 align-items-end">
+        <div class="col-md-4">
+            <label class="form-label small text-uppercase fw-bold text-muted">Search by Name</label>
+            <input type="text" class="form-control" id="searchInput" placeholder="Type to search inmates...">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label small text-uppercase fw-bold text-muted">Filter by Status</label>
+            <select class="form-select" id="statusFilter">
+                <option value="">All Statuses</option>
+                <option value="Active">Active</option>
+                <option value="Released">Released</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label small text-uppercase fw-bold text-muted">Filter by Cell</label>
+            <select class="form-select" id="cellFilter">
+                <option value="">All Cells</option>
+                <option value="unassigned">Unassigned</option>
+                 {# Dynamically populate this from your backend for a full solution #}
+                {% for cell in cells %}
+                    <option value="{{ cell.cell_number }}">{{ cell.cell_number }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-outline-secondary w-100" onclick="clearFilters()">
+                <i class="fas fa-times me-2"></i>Clear
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="inmates-table-card">
+    <div class="table-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-users me-2 text-primary"></i>Inmate Registry</h5>
+            <div class="d-flex align-items-center">
+                <small class="text-muted me-3"><span id="displayCount">{{ inmates|length }}</span> records found</small>
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-download me-1"></i>Export
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-dark">
+                        <li><a class="dropdown-item" href="javascript:void(0)" onclick="exportToCsv('inmate_report.csv')"><i class="fas fa-file-csv me-2"></i>CSV Export</a></li>
+                        <li><a class="dropdown-item" href="javascript:void(0)" onclick="exportToPdf('inmate_report.pdf')"><i class="fas fa-file-pdf me-2"></i>PDF Report</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="inmate-list-container">
+        <div class="inmate-list-header">
+            <div class="col-details"><i class="fas fa-user me-2"></i>Inmate Details</div>
+            <div class="col-crime"><i class="fas fa-gavel me-2"></i>Crime & Sentence</div>
+            <div class="col-dates"><i class="fas fa-calendar me-2"></i>Dates</div>
+            <div class="col-status"><i class="fas fa-info-circle me-2"></i>Status</div>
+            <div class="col-cell"><i class="fas fa-th-large me-2"></i>Cell</div>
+            <div class="col-actions"><i class="fas fa-cogs me-2"></i>Actions</div>
+        </div>
+
+        <div id="inmate-list-body">
+            {% for inmate in inmates %}
+            <div class="inmate-row-item" data-name="{{ inmate.name|lower }}" data-status="{{ inmate.status }}" data-cell="{{ inmate.cell_number or 'unassigned' }}">
+                <div class="col-details">
+                    <div class="d-flex align-items-center">
+                        <img src="{{ inmate.photo_url or 'https://via.placeholder.com/45' }}" class="inmate-avatar me-3" alt="{{ inmate.name }}" onerror="this.src='https://via.placeholder.com/45'">
+                        <div>
+                            <h6 class="mb-1 fw-bold">{{ inmate.name }}</h6>
+                            <small class="text-muted">ID: {{ inmate.id }}</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-crime">
+                    <div>
+                        <div class="fw-semibold text-warning">{{ inmate.crime }}</div>
+                        <small class="text-muted">{{ inmate.sentence }}</small>
+                    </div>
+                </div>
+                <div class="col-dates">
+                    <div>
+                        <div class="small"><strong>Admitted:</strong> {{ inmate.admission_date.strftime('%m/%d/%Y') }}</div>
+                        <div class="small text-warning"><strong>Release:</strong> {{ inmate.release_date.strftime('%m/%d/%Y') }}</div>
+                    </div>
+                </div>
+                <div class="col-status">
+                    {% if inmate.status == 'Active' %}
+                    <span class="status-badge status-active"><i class="fas fa-user-lock me-1"></i>{{ inmate.status }}</span>
+                    {% else %}
+                    <span class="status-badge status-released"><i class="fas fa-user-check me-1"></i>{{ inmate.status }}</span>
+                    {% endif %}
+                </div>
+                <div class="col-cell">
+                    {% if inmate.cell_number %}
+                    <span class="cell-badge">{{ inmate.cell_number }}</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Unassigned</span>
+                    {% endif %}
+                </div>
+                <div class="col-actions">
+                    <button class="btn btn-outline-info action-btn" onclick="viewInmate('{{ inmate.id }}')" title="View Profile"><i class="fas fa-eye"></i></button>
+                    <button class="btn btn-outline-warning action-btn editBtn" data-id="{{ inmate.id }}" data-name="{{ inmate.name }}" data-crime="{{ inmate.crime }}" data-sentence="{{ inmate.sentence }}" data-sentence_duration="{{ inmate.sentence_duration }}" data-release="{{ inmate.release_date.strftime('%Y-%m-%d') }}" data-photo_url="{{ inmate.photo_url or '' }}" data-bs-toggle="modal" data-bs-target="#editInmateModal" title="Edit Record"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-outline-danger action-btn deleteBtn" data-id="{{ inmate.id }}" data-name="{{ inmate.name }}" title="Delete Record"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-users-slash"></i>
+                <h4>No Inmates Found</h4>
+                <p class="mb-0">Click "Add New Inmate" to register the first inmate record.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="addInmateModal" tabindex="-1" aria-labelledby="addInmateModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <form id="addInmateForm" class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="addInmateModalLabel">Add New Inmate</h5>
+                <h5 class="modal-title" id="addInmateModalLabel"><i class="fas fa-user-plus me-2 text-success"></i> Add New Inmate</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div class="mb-3">
-                    <label for="add-name" class="form-label">Name</label>
-                    <input id="add-name" name="name" class="form-control" required>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="add-name" class="form-label fw-bold">Full Name</label>
+                        <input id="add-name" name="name" class="form-control" placeholder="Enter full name" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="add-crime" class="form-label fw-bold">Crime</label>
+                        <input id="add-crime" name="crime" class="form-control" placeholder="Enter crime details" required>
+                    </div>
                 </div>
-                <div class="mb-3">
-                    <label for="add-crime" class="form-label">Crime</label>
-                    <input id="add-crime" name="crime" class="form-control" required>
+                <div class="row g-3 mt-2">
+                    <div class="col-md-6">
+                        <label for="add-sentence" class="form-label fw-bold">Sentence</label>
+                        <input id="add-sentence" name="sentence" class="form-control" placeholder="e.g., 5 years imprisonment" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="add-sentence_duration" class="form-label fw-bold">Sentence Duration</label>
+                        <input id="add-sentence_duration" name="sentence_duration" class="form-control" placeholder="e.g., 60 months" required>
+                    </div>
                 </div>
-                <div class="mb-3">
-                    <label for="add-sentence" class="form-label">Sentence</label>
-                    <input id="add-sentence" name="sentence" class="form-control" required>
+                <div class="mt-3">
+                    <label for="add-photo_url" class="form-label fw-bold">Photo URL</label>
+                    <input id="add-photo_url" name="photo_url" class="form-control" placeholder="https://example.com/photo.jpg">
+                    <div class="form-text">Optional: Provide a URL for the inmate's photo</div>
                 </div>
-                <div class="mb-3">
-                    <label for="add-sentence_duration" class="form-label">Sentence Duration</label>
-                    <input id="add-sentence_duration" name="sentence_duration" class="form-control" required>
-                </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="add-admission_date" class="form-label">Admission Date</label>
+                <div class="row g-3 mt-2">
+                    <div class="col-md-6">
+                        <label for="add-admission_date" class="form-label fw-bold">Admission Date</label>
                         <input id="add-admission_date" name="admission_date" type="date" class="form-control" required>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="add-release_date" class="form-label">Release Date</label>
+                    <div class="col-md-6">
+                        <label for="add-release_date" class="form-label fw-bold">Expected Release Date</label>
                         <input id="add-release_date" name="release_date" type="date" class="form-control" required>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn btn-primary">Add Inmate</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-2"></i>Cancel</button>
+                <button type="submit" class="btn btn-success"><i class="fas fa-save me-2"></i>Add Inmate</button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- Edit Inmate Modal -->
 <div class="modal fade" id="editInmateModal" tabindex="-1" aria-labelledby="editInmateModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <form id="editInmateForm" class="modal-content">
             <input type="hidden" name="id">
             <div class="modal-header">
-                <h5 class="modal-title" id="editInmateModalLabel">Edit Inmate Record</h5>
+                <h5 class="modal-title" id="editInmateModalLabel"><i class="fas fa-user-edit me-2 text-warning"></i> Edit Inmate Record</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div class="mb-3">
-                    <label for="edit-name" class="form-label">Name</label>
-                    <input id="edit-name" name="name" class="form-control" required>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="edit-name" class="form-label fw-bold">Full Name</label>
+                        <input id="edit-name" name="name" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="edit-crime" class="form-label fw-bold">Crime</label>
+                        <input id="edit-crime" name="crime" class="form-control" required>
+                    </div>
                 </div>
-                <div class="mb-3">
-                    <label for="edit-crime" class="form-label">Crime</label>
-                    <input id="edit-crime" name="crime" class="form-control" required>
+                <div class="row g-3 mt-2">
+                    <div class="col-md-6">
+                        <label for="edit-sentence" class="form-label fw-bold">Sentence</label>
+                        <input id="edit-sentence" name="sentence" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="edit-sentence_duration" class="form-label fw-bold">Sentence Duration</label>
+                        <input id="edit-sentence_duration" name="sentence_duration" class="form-control" required>
+                    </div>
                 </div>
-                <div class="mb-3">
-                    <label for="edit-sentence" class="form-label">Sentence</label>
-                    <input id="edit-sentence" name="sentence" class="form-control" required>
+                <div class="mt-3">
+                    <label for="edit-photo_url" class="form-label fw-bold">Photo URL</label>
+                    <input id="edit-photo_url" name="photo_url" class="form-control" placeholder="https://example.com/photo.jpg">
                 </div>
-                 <div class="mb-3">
-                    <label for="edit-sentence_duration" class="form-label">Sentence Duration</label>
-                    <input id="edit-sentence_duration" name="sentence_duration" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                    <label for="edit-release_date" class="form-label">Release Date</label>
+                <div class="mt-3">
+                    <label for="edit-release_date" class="form-label fw-bold">Release Date</label>
                     <input id="edit-release_date" name="release_date" type="date" class="form-control" required>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn btn-primary">Save Changes</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-2"></i>Cancel</button>
+                <button type="submit" class="btn btn-warning"><i class="fas fa-save me-2"></i>Save Changes</button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- Delete Confirmation Modal -->
 <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title" id="deleteConfirmModalLabel">Confirm Deletion</h5>
+                <h5 class="modal-title" id="deleteConfirmModalLabel"><i class="fas fa-exclamation-triangle me-2"></i> Confirm Deletion</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                Are you sure you want to delete the record for <strong id="inmateNameToDelete"></strong>? This action cannot be undone.
+                <div class="text-center">
+                    <i class="fas fa-user-times fa-3x text-danger mb-3"></i>
+                    <p class="mb-3">Are you sure you want to delete the record for:</p>
+                    <h5 class="text-danger" id="inmateNameToDelete"></h5>
+                    <p class="text-muted small mt-3">This action cannot be undone.</p>
+                </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete Record</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-2"></i>Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn"><i class="fas fa-trash me-2"></i>Delete Record</button>
             </div>
         </div>
     </div>
@@ -166,86 +470,193 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const addModal = new bootstrap.Modal(document.getElementById('addInmateModal'));
-    const editModal = new bootstrap.Modal(document.getElementById('editInmateModal'));
-    const deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
-
-    // Handle Add Inmate
-    document.getElementById('addInmateForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const formData = new FormData(this);
-        fetch('/add_inmate', { method: 'POST', body: formData })
-            .then(res => res.json())
-            .then(data => {
-                if (data.message) {
-                    addModal.hide();
-                    showToast(data.message, 'success');
-                    setTimeout(() => location.reload(), 1500);
-                } else {
-                    showToast(data.error || 'Failed to add inmate.', 'danger');
-                }
-            });
-    });
-
-    // Handle populating the Edit Modal
-    document.querySelectorAll('.editBtn').forEach(button => {
-        button.addEventListener('click', () => {
-            const form = document.getElementById('editInmateForm');
-            form.id.value = button.dataset.id;
-            form.name.value = button.dataset.name;
-            form.crime.value = button.dataset.crime;
-            form.sentence.value = button.dataset.sentence;
-            form.sentence_duration.value = button.dataset.sentence_duration;
-            form.release_date.value = button.dataset.release;
-        });
-    });
-
-    // Handle Edit Inmate form submission
-    document.getElementById('editInmateForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const id = this.id.value;
-        const formData = new FormData(this);
-        fetch(`/edit_inmate/${id}`, { method: 'POST', body: formData })
-            .then(res => res.json())
-            .then(data => {
-                if (data.message) {
-                    editModal.hide();
-                    showToast(data.message, 'success');
-                    setTimeout(() => location.reload(), 1500);
-                } else {
-                    showToast(data.error || 'Failed to update inmate.', 'danger');
-                }
-            });
-    });
-
-    // Handle showing the Delete Confirmation Modal
-    let inmateIdToDelete = null;
-    document.querySelectorAll('.deleteBtn').forEach(button => {
-        button.addEventListener('click', () => {
-            inmateIdToDelete = button.dataset.id;
-            document.getElementById('inmateNameToDelete').textContent = button.dataset.name;
-            deleteModal.show();
-        });
-    });
-
-    // Handle the actual deletion
-    document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
-        if (!inmateIdToDelete) return;
+    // --- EXPORT FUNCTIONS ---
+    function exportToCsv(filename) {
+        const inmatesData = {{ inmates|tojson }};
+        if (inmatesData.length === 0) { showToast('No data to export.', 'warning'); return; }
+        const headers = ["ID", "Name", "Crime", "Sentence", "AdmissionDate", "ReleaseDate", "Status", "CellNumber"];
+        const csvRows = [headers.join(',')];
         
-        fetch(`/delete_inmate/${inmateIdToDelete}`, { method: 'POST' })
-            .then(res => res.json())
-            .then(data => {
-                if (data.message) {
-                    deleteModal.hide();
-                    showToast(data.message, 'success');
-                    setTimeout(() => location.reload(), 1500);
+        inmatesData.forEach(inmate => {
+            const row = [
+                inmate.id, `"${inmate.name || ''}"`, `"${inmate.crime || ''}"`, `"${inmate.sentence || ''}"`,
+                inmate.admission_date, inmate.release_date, inmate.status, inmate.cell_number || "N/A"
+            ];
+            csvRows.push(row.join(','));
+        });
+
+        const csvString = csvRows.join('\n');
+        const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", filename);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        showToast('CSV Report downloaded!', 'success');
+    }
+
+    function exportToPdf(filename) {
+        const inmatesData = {{ inmates|tojson }};
+        if (inmatesData.length === 0) { showToast('No data to export.', 'warning'); return; }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const tableHeaders = [["ID", "Name", "Crime", "Status", "Cell", "Release Date"]];
+        const tableBody = inmatesData.map(inmate => [
+            inmate.id, inmate.name || '', inmate.crime || '', inmate.status || '',
+            inmate.cell_number || 'N/A', inmate.release_date || ''
+        ]);
+
+        doc.text("Inmate Registry Report", 14, 15);
+        doc.autoTable({
+            head: tableHeaders,
+            body: tableBody,
+            startY: 20,
+            theme: 'grid',
+            headStyles: { fillColor: [41, 128, 185] }
+        });
+
+        doc.save(filename);
+        showToast('PDF Report downloaded!', 'success');
+    }
+
+    // --- MAIN SCRIPT ---
+    document.addEventListener('DOMContentLoaded', function() {
+        const addModal = new bootstrap.Modal(document.getElementById('addInmateModal'));
+        const editModal = new bootstrap.Modal(document.getElementById('editInmateModal'));
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+
+        const searchInput = document.getElementById('searchInput');
+        const statusFilter = document.getElementById('statusFilter');
+        const cellFilter = document.getElementById('cellFilter');
+        const inmateRows = document.querySelectorAll('.inmate-row-item');
+        const displayCount = document.getElementById('displayCount');
+        const listBody = document.getElementById('inmate-list-body');
+
+        function filterTable() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const statusValue = statusFilter.value;
+            const cellValue = cellFilter.value;
+            let visibleCount = 0;
+
+            inmateRows.forEach(row => {
+                const name = row.dataset.name;
+                const status = row.dataset.status;
+                const cell = row.dataset.cell;
+
+                const matchesSearch = name.includes(searchTerm);
+                const matchesStatus = !statusValue || status === statusValue;
+                const matchesCell = !cellValue || 
+                    (cellValue === 'unassigned' && cell === 'unassigned') ||
+                    (cellValue !== 'unassigned' && cell === cellValue);
+
+                if (matchesSearch && matchesStatus && matchesCell) {
+                    row.style.display = 'flex';
+                    visibleCount++;
                 } else {
-                    showToast(data.error || 'Failed to delete inmate.', 'danger');
+                    row.style.display = 'none';
                 }
             });
+
+            displayCount.textContent = visibleCount;
+            const existingEmptyState = listBody.querySelector('.empty-state-filter');
+            if(existingEmptyState) existingEmptyState.remove();
+
+            if (visibleCount === 0 && inmateRows.length > 0) {
+                const emptyState = document.createElement('div');
+                emptyState.className = 'empty-state empty-state-filter';
+                emptyState.innerHTML = `<i class="fas fa-search-minus"></i><h4>No Results Found</h4><p class="mb-0">Try adjusting your search criteria.</p>`;
+                listBody.appendChild(emptyState);
+            }
+        }
+
+        window.clearFilters = function() {
+            searchInput.value = '';
+            statusFilter.value = '';
+            cellFilter.value = '';
+            filterTable();
+        };
+
+        searchInput.addEventListener('input', filterTable);
+        statusFilter.addEventListener('change', filterTable);
+        cellFilter.addEventListener('change', filterTable);
+        
+        window.viewInmate = function(inmateId) {
+            window.location.href = `/inmate_profile/${inmateId}`;
+        };
+        
+        // --- COMPLETE SCRIPT FOR MODAL FUNCTIONALITY ---
+        // Handle Add Inmate
+        document.getElementById('addInmateForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            fetch('/add_inmate', { method: 'POST', body: new FormData(this) })
+                .then(res => res.json()).then(data => {
+                    if (data.message) {
+                        addModal.hide();
+                        showToast(data.message, 'success');
+                        setTimeout(() => location.reload(), 1500);
+                    } else { showToast(data.error || 'Failed to add inmate.', 'danger'); }
+                }).catch(err => showToast('An error occurred.', 'danger'));
+        });
+
+        // Populate Edit Modal
+        document.querySelectorAll('.editBtn').forEach(button => {
+            button.addEventListener('click', () => {
+                const form = document.getElementById('editInmateForm');
+                form.querySelector('input[name="id"]').value = button.dataset.id;
+                form.querySelector('input[name="name"]').value = button.dataset.name;
+                form.querySelector('input[name="crime"]').value = button.dataset.crime;
+                form.querySelector('input[name="sentence"]').value = button.dataset.sentence;
+                form.querySelector('input[name="sentence_duration"]').value = button.dataset.sentence_duration;
+                form.querySelector('input[name="release_date"]').value = button.dataset.release;
+                form.querySelector('input[name="photo_url"]').value = button.dataset.photo_url;
+            });
+        });
+        
+        // Handle Edit Inmate
+        document.getElementById('editInmateForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const id = this.querySelector('input[name="id"]').value;
+            fetch(`/edit_inmate/${id}`, { method: 'POST', body: new FormData(this) })
+                .then(res => res.json()).then(data => {
+                    if (data.message) {
+                        editModal.hide();
+                        showToast(data.message, 'success');
+                        setTimeout(() => location.reload(), 1500);
+                    } else { showToast(data.error || 'Failed to update inmate.', 'danger'); }
+                }).catch(err => showToast('An error occurred.', 'danger'));
+        });
+        
+        // Handle Delete Modal
+        let inmateIdToDelete = null;
+        document.querySelectorAll('.deleteBtn').forEach(button => {
+            button.addEventListener('click', () => {
+                inmateIdToDelete = button.dataset.id;
+                document.getElementById('inmateNameToDelete').textContent = button.dataset.name;
+                deleteModal.show();
+            });
+        });
+
+        // Confirm and Handle Deletion
+        document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+            if (!inmateIdToDelete) return;
+            fetch(`/delete_inmate/${inmateIdToDelete}`, { method: 'POST' })
+                .then(res => res.json()).then(data => {
+                    if (data.message) {
+                        deleteModal.hide();
+                        showToast(data.message, 'success');
+                        setTimeout(() => location.reload(), 1500);
+                    } else { showToast(data.error || 'Failed to delete inmate.', 'danger'); }
+                }).catch(err => showToast('An error occurred.', 'danger'));
+        });
     });
-});
 </script>
 {% endblock %}
