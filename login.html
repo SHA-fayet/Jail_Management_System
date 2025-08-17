@@ -3,128 +3,645 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>কারাগার You Know Right?</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <title>কারাগার - System Access</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Roboto Mono', monospace;
-            background-color: #0d1117;
-            color: #c9d1d9;
-            background-image: 
-                linear-gradient(rgba(13, 17, 23, 0.97), rgba(13, 17, 23, 0.97)),
-                url("https://images.unsplash.com/photo-1599827552494-3a04a5329bdd?auto=format&fit=crop&q=80&w=1887");
-            background-size: cover;
-            background-position: center;
+        :root {
+            --primary-bg: #0a0e1a;
+            --secondary-bg: #1a1f2e;
+            --accent-bg: #242b3d;
+            --border-color: #364152;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --glass-bg: rgba(26, 31, 46, 0.85);
         }
-        .login-wrapper {
-            display: flex;
-            min-height: 100vh;
-            width: 100%;
-        }
-        .staff-panel { flex: 3; display: flex; align-items: center; justify-content: center; padding: 3rem; }
-        .visitor-panel { flex: 2; display: flex; align-items: center; justify-content: center; padding: 3rem; background-color: rgba(22, 27, 34, 0.85); border-left: 1px solid #30363d; text-align: center; flex-direction: column; }
-        .login-box { max-width: 450px; width: 100%; }
-        .login-box img { max-height: 80px; margin-bottom: 1.5rem; }
-        .login-box h1 { font-family: 'Orbitron', sans-serif; letter-spacing: 2px; font-size: 1.8rem; margin-bottom: 0.5rem; }
-        .login-box p { color: #8b949e; }
-        .visitor-panel h2 { font-family: 'Orbitron', sans-serif; letter-spacing: 1px; color: #58a6ff; }
-        .btn-visit { font-size: 1.1rem; padding: 0.8rem 2rem; }
 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--primary-bg) 0%, #0f1419 50%, var(--primary-bg) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(16, 185, 129, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .login-container {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            position: relative;
+        }
+
+        .staff-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem;
+            position: relative;
+        }
+
+        .visitor-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem;
+            position: relative;
+        }
+
+        .login-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 1.5rem;
+            padding: 3rem;
+            max-width: 450px;
+            width: 100%;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-green), var(--accent-blue));
+            background-size: 200% 100%;
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { background-position: 200% 0; }
+            50% { background-position: 0% 0; }
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .logo-section img {
+            max-height: 80px;
+            filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.4));
+            margin-bottom: 1.5rem;
+        }
+
+        .system-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            font-size: 2rem;
+            letter-spacing: 3px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .system-subtitle {
+            color: var(--text-secondary);
+            font-style: italic;
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-floating {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-control {
+            background: var(--accent-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .form-control:focus {
+            background: var(--secondary-bg);
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .form-floating > label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .btn-access {
+            background: linear-gradient(135deg, var(--accent-blue), #2563eb);
+            border: none;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-access::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s;
+        }
+
+        .btn-access:hover {
+            background: linear-gradient(135deg, #2563eb, var(--accent-blue));
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-access:hover::before {
+            left: 100%;
+        }
+
+        .visitor-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 1.5rem;
+            padding: 3rem;
+            max-width: 450px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .visitor-icon {
+            background: linear-gradient(135deg, var(--accent-green), #059669);
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+        }
+
+        .visitor-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+            color: var(--accent-green);
+            margin-bottom: 1rem;
+        }
+
+        .visitor-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .btn-visitor {
+            border-radius: 0.75rem;
+            padding: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-visitor::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.6s;
+        }
+
+        .btn-visitor:hover::before {
+            left: 100%;
+        }
+
+        .btn-visit-primary {
+            background: linear-gradient(135deg, var(--accent-green), #059669);
+            border: none;
+            color: white;
+        }
+
+        .btn-visit-primary:hover {
+            background: linear-gradient(135deg, #059669, var(--accent-green));
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-visit-secondary {
+            background: transparent;
+            border: 2px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .btn-visit-secondary:hover {
+            background: var(--accent-bg);
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+            color: var(--text-primary);
+        }
+
+        .alert {
+            border: none;
+            border-radius: 0.75rem;
+            backdrop-filter: blur(10px);
+            border-left: 4px solid;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.15);
+            color: #6ee7b7;
+            border-left-color: var(--accent-green);
+        }
+
+        .alert-danger {
+            background: rgba(239, 68, 68, 0.15);
+            color: #fca5a5;
+            border-left-color: #ef4444;
+        }
+
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fcd34d;
+            border-left-color: #f59e0b;
+        }
+
+        .alert-info {
+            background: rgba(59, 130, 246, 0.15);
+            color: #93c5fd;
+            border-left-color: var(--accent-blue);
+        }
+
+        .footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1.5rem;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            background: linear-gradient(180deg, transparent, rgba(10, 14, 26, 0.8));
+        }
+
+        .footer p {
+            margin: 0.25rem 0;
+        }
+
+        /* Mobile Responsive */
         @media (max-width: 992px) {
-            .login-wrapper { flex-direction: column; }
-            .staff-panel, .visitor-panel { flex: 1; min-height: 50vh; }
-            .visitor-panel { border-left: none; border-top: 1px solid #30363d; }
+            .login-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: 1fr auto;
+            }
+
+            .staff-section, .visitor-section {
+                padding: 2rem 1rem;
+            }
+
+            .visitor-section {
+                border-left: none;
+                border-top: 1px solid var(--border-color);
+            }
+
+            .login-card, .visitor-card {
+                padding: 2rem;
+            }
+
+            .system-title {
+                font-size: 1.5rem;
+                letter-spacing: 2px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .staff-section, .visitor-section {
+                padding: 1.5rem 1rem;
+            }
+
+            .login-card, .visitor-card {
+                padding: 1.5rem;
+            }
+
+            .system-title {
+                font-size: 1.25rem;
+                letter-spacing: 1px;
+            }
+        }
+
+        /* Loading animation */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        /* Floating particles effect */
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            background: var(--accent-blue);
+            border-radius: 50%;
+            opacity: 0.1;
+            animation: float 15s infinite linear;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.1;
+            }
+            90% {
+                opacity: 0.1;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="login-wrapper">
-        <!-- Staff Login Panel -->
-        <div class="staff-panel">
-            <div class="login-box">
-                <div class="text-center">
+    <!-- Floating Particles Background -->
+    <div class="particles" id="particles"></div>
+
+    <div class="login-container">
+        <!-- Staff Login Section -->
+        <div class="staff-section">
+            <div class="login-card fade-in-up">
+                <div class="logo-section">
                     <img src="{{ url_for('static', filename='css/images/jail_logo.png') }}" alt="JMS Logo">
-                    <h1 class="display-2">কারাগার</h1>
-                    <p class="lead text-white-50">"এখানে দেয়াল কথা বলে, আর সময় শোনে।"</p>
+                    <h1 class="system-title">কারাগার</h1>
+                    <p class="system-subtitle">"এখানে দেয়াল কথা বলে, আর সময় শোনে।"</p>
                 </div>
-                <hr class="my-4">
                 
-                <!-- Display Flashed Messages (e.g., for logout) after login or logout -->
+                <!-- Flash Messages -->
                 {% with messages = get_flashed_messages(with_categories=true) %}
                     {% if messages %}
                         {% for category, message in messages %}
                             <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert" id="flash-message">
-                                {{ message }}
+                                <div class="d-flex align-items-center">
+                                    {% if category == 'success' %}
+                                        <i class="fas fa-check-circle me-2"></i>
+                                    {% elif category == 'danger' %}
+                                        <i class="fas fa-exclamation-circle me-2"></i>
+                                    {% elif category == 'warning' %}
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                    {% else %}
+                                        <i class="fas fa-info-circle me-2"></i>
+                                    {% endif %}
+                                    {{ message }}
+                                </div>
                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
                         {% endfor %}
                     {% endif %}
                 {% endwith %}
 
-                <form action="/login" method="post">
+                <form action="/login" method="post" class="login-form">
                     <div class="form-floating mb-3">
                         <input type="text" class="form-control" id="username" name="username" placeholder="Username" required>
-                        <label for="username">Username / ID</label>
+                        <label for="username"><i class="fas fa-user me-2"></i>Username / ID</label>
                     </div>
-                    <div class="form-floating mb-3">
+                    <div class="form-floating mb-4">
                         <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
-                        <label for="password">Password</label>
+                        <label for="password"><i class="fas fa-lock me-2"></i>Password</label>
                     </div>
-                    <button type="submit" class="btn btn-primary w-100 py-3">
-                        <i class="fas fa-sign-in-alt me-2"></i>Access System
+                    <button type="submit" class="btn btn-access w-100">
+                        <i class="fas fa-sign-in-alt me-2"></i>
+                        <span class="btn-text">Access System</span>
                     </button>
                 </form>
+
+                <div class="text-center mt-4">
+                    <small class="text-muted">
+                        <i class="fas fa-shield-alt me-1"></i>
+                        Secure Staff Access Portal
+                    </small>
+                </div>
             </div>
         </div>
 
-        <!-- Visitor Panel -->
-        <div class="visitor-panel">
-            <div>
-                <i class="fas fa-users fa-3x mb-4 text-secondary"></i>
-                <h2 class="mb-3">VISITOR ACCESS</h2>
-                <p class="lead mb-4">
-                    Public access for visitation requests and status checks.
+        <!-- Visitor Section -->
+        <div class="visitor-section">
+            <div class="visitor-card fade-in-up" style="animation-delay: 0.2s;">
+                <div class="visitor-icon">
+                    <i class="fas fa-users fa-2x text-white"></i>
+                </div>
+                
+                <h2 class="visitor-title">VISITOR ACCESS</h2>
+                <p class="lead mb-4 text-muted">
+                    Public portal for visitation requests and status management
                 </p>
-                <div class="d-grid gap-3">
-                    <a href="/visit_request" class="btn btn-lg btn-success btn-visit">
-                        <i class="fas fa-user-check me-2"></i> Request a New Visit
+                
+                <div class="visitor-buttons">
+                    <a href="/visit_request" class="btn btn-visitor btn-visit-primary">
+                        <i class="fas fa-calendar-plus me-2"></i>
+                        Request a New Visit
                     </a>
-                    <a href="/check_visit_status" class="btn btn-lg btn-outline-secondary">
-                        <i class="fas fa-search me-2"></i> Check Request Status
+                    <a href="/check_visit_status" class="btn btn-visitor btn-visit-secondary">
+                        <i class="fas fa-search me-2"></i>
+                        Check Request Status
                     </a>
-                    <a href="/visitor_check_in" class="btn btn-lg btn-outline-info">
-                        <i class="fas fa-id-card me-2"></i> Visitor Check-in
+                    <a href="/visitor_check_in" class="btn btn-visitor btn-visit-secondary">
+                        <i class="fas fa-id-card-alt me-2"></i>
+                        Visitor Check-in
                     </a>
+                </div>
+
+                <div class="mt-4 pt-3 border-top border-secondary">
+                    <small class="text-muted d-flex align-items-center justify-content-center">
+                        <i class="fas fa-info-circle me-2"></i>
+                        No account required for visitor services
+                    </small>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; <span id="currentYear"></span> কারাগার Management System. All Rights Reserved.</p>
+        <p><strong>Developed by Shafa</strong> | Dhaka, Bangladesh</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Automatically will hide the login success message  **
         document.addEventListener('DOMContentLoaded', function() {
+            // Set current year
+            document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+            // Auto-hide flash messages
             const flashMessage = document.getElementById('flash-message');
             if (flashMessage) {
                 setTimeout(() => {
-                    // Use bootstrap's built-in alert functionality to close it
                     const bsAlert = new bootstrap.Alert(flashMessage);
                     bsAlert.close();
-                }, 5000); // 5 seconds
+                }, 6000);
+            }
+
+            // Enhanced form submission with loading state
+            const loginForm = document.querySelector('.login-form');
+            if (loginForm) {
+                loginForm.addEventListener('submit', function(e) {
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    const btnText = submitBtn.querySelector('.btn-text');
+                    
+                    submitBtn.disabled = true;
+                    btnText.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Authenticating...';
+                    
+                    // Re-enable button after 5 seconds as fallback
+                    setTimeout(() => {
+                        submitBtn.disabled = false;
+                        btnText.innerHTML = '<i class="fas fa-sign-in-alt me-2"></i>Access System';
+                    }, 5000);
+                });
+            }
+
+            // Create floating particles
+            function createParticle() {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                const size = Math.random() * 4 + 2;
+                const startPosition = Math.random() * 100;
+                const duration = Math.random() * 10 + 10;
+                
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                particle.style.left = startPosition + '%';
+                particle.style.animationDuration = duration + 's';
+                particle.style.animationDelay = Math.random() * 2 + 's';
+                
+                // Randomize colors
+                const colors = ['#3b82f7', '#10b981', '#8b8cf6', '#f50e0b'];
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                
+                document.getElementById('particles').appendChild(particle);
+                
+                // Remove particle after animation
+                setTimeout(() => {
+                    if (particle.parentNode) {
+                        particle.parentNode.removeChild(particle);
+                    }
+                }, (duration + 2) * 1000);
+            }
+
+            // Create particles periodically
+            setInterval(createParticle, 2000);
+            
+            // Create initial particles
+            for (let i = 0; i < 5; i++) {
+                setTimeout(createParticle, i * 500);
+            }
+
+            // Add subtle hover effects to cards
+            const cards = document.querySelectorAll('.login-card, .visitor-card');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px) scale(1.01)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+
+            // Input focus animations
+            const inputs = document.querySelectorAll('.form-control');
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.parentElement.style.transform = 'translateY(-2px)';
+                });
+                
+                input.addEventListener('blur', function() {
+                    this.parentElement.style.transform = 'translateY(0)';
+                });
+            });
+        });
+
+        // Keyboard accessibility
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                document.body.classList.add('keyboard-navigation');
             }
         });
-    </script>
-    <footer class="page-footer">
-        <p class="mb-0">&copy; <span id="currentYear"></span> কারাগার Management System. All Rights Reserved.</p>
-        <p>Developed by Shafa</p>
-        <p>Dhaka, Bangladesh</p>
-    </footer>
 
-    <script>
-        // Setting the current year at the end
-        document.getElementById('currentYear').textContent = new Date().getFullYear();
+        document.addEventListener('mousedown', function() {
+            document.body.classList.remove('keyboard-navigation');
+        });
     </script>
+
+    <style>
+        /* Keyboard navigation styles */
+        .keyboard-navigation .form-control:focus,
+        .keyboard-navigation .btn:focus {
+            outline: 2px solid var(--accent-blue);
+            outline-offset: 2px;
+        }
+    </style>
 </body>
 </html>
