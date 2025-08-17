@@ -53,6 +53,17 @@ def dashboard():
     """)
     upcoming_releases = cur.fetchall()
     
+    # --- START OF THE FIX ---
+    # Calculate 'days_left' for each inmate before rendering
+    today = date.today()
+    for inmate in upcoming_releases:
+        # This check prevents errors if release_date is somehow None
+        if inmate['release_date']:
+            inmate['days_left'] = (inmate['release_date'] - today).days
+        else:
+            inmate['days_left'] = None # Assign a default value
+    # --- END OF THE FIX ---
+
     # Fetch any recent alerts to display on the dashboard
     try:
         cur.execute("SELECT message FROM alerts ORDER BY created_at DESC LIMIT 5")
