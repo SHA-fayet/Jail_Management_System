@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Cell Management</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        {% if session['role'] == 'admin' %}
+        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addCellModal">
+            <i class="fas fa-plus me-2"></i>Add New Cell
+        </button>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card bg-dark border-secondary">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Cell Number</th>
+                        <th class="text-center">Capacity</th>
+                        <th class="text-center">Occupants</th>
+                        <th style="width: 30%;">Occupancy</th>
+                        {% if session['role'] == 'admin' %}
+                        <th class="text-end">Actions</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cell in cells %}
+                    <tr>
+                        <td class="fw-bold">{{ cell.cell_number }}</td>
+                        <td class="text-center">{{ cell.capacity }}</td>
+                        <td class="text-center">{{ cell.current_occupants }}</td>
+                        <td>
+                            {% set occupancy_percent = (cell.current_occupants / cell.capacity * 100) if cell.capacity > 0 else 0 %}
+                            
+                            {# First, set a variable for the progress bar color class #}
+                            {% set progress_class = 'bg-success' %}
+                            {% if occupancy_percent > 90 %}
+                                {% set progress_class = 'bg-danger' %}
+                            {% elif occupancy_percent > 70 %}
+                                {% set progress_class = 'bg-warning' %}
+                            {% endif %}
+
+                            {# Then, use that variable in the class attribute. This is cleaner and avoids editor errors. #}
+                            <div class="progress" style="height: 20px;" title="{{ "%.0f"|format(occupancy_percent) }}% Full">
+                                <div class="progress-bar {{ progress_class }}" 
+                                     role="progressbar" style="width: {{ occupancy_percent }}%;" 
+                                     aria-valuenow="{{ occupancy_percent }}" aria-valuemin="0" aria-valuemax="100">
+                                </div>
+                            </div>
+                        </td>
+                        {% if session['role'] == 'admin' %}
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-outline-warning editBtn"
+                                    data-id="{{ cell.id }}"
+                                    data-cell_number="{{ cell.cell_number }}"
+                                    data-capacity="{{ cell.capacity }}"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#editCellModal">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger deleteBtn"
+                                    data-id="{{ cell.id }}"
+                                    data-cell_number="{{ cell.cell_number }}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add Cell Modal -->
+<div class="modal fade" id="addCellModal" tabindex="-1" aria-labelledby="addCellModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form id="addCellForm" class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addCellModalLabel">Add New Cell</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="add-cell_number" class="form-label">Cell Number</label>
+                    <input id="add-cell_number" name="cell_number" class="form-control" placeholder="e.g., A-101" required>
+                </div>
+                <div class="mb-3">
+                    <label for="add-capacity" class="form-label">Capacity</label>
+                    <input id="add-capacity" name="capacity" type="number" class="form-control" min="1" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary">Add Cell</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Cell Modal -->
+<div class="modal fade" id="editCellModal" tabindex="-1" aria-labelledby="editCellModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form id="editCellForm" class="modal-content">
+            <input type="hidden" name="id" id="edit-id">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editCellModalLabel">Edit Cell</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="edit-cell_number" class="form-label">Cell Number</label>
+                    <input id="edit-cell_number" name="cell_number" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="edit-capacity" class="form-label">Capacity</label>
+                    <input id="edit-capacity" name="capacity" type="number" class="form-control" min="1" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteConfirmModalLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete cell <strong id="cellNameToDelete"></strong>? This action cannot be undone.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete Cell</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const addModal = new bootstrap.Modal(document.getElementById('addCellModal'));
+    const editModal = new bootstrap.Modal(document.getElementById('editCellModal'));
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+
+    // Handle Add Cell
+    document.getElementById('addCellForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        fetch('/add_cell', { method: 'POST', body: new FormData(this) })
+            .then(res => res.json())
+            .then(data => {
+                if (data.message) {
+                    addModal.hide();
+                    showToast(data.message, 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showToast(data.error || 'Failed to add cell.', 'danger');
+                }
+            });
+    });
+
+    // Handle populating the Edit Modal
+    document.querySelectorAll('.editBtn').forEach(button => {
+        button.addEventListener('click', () => {
+            document.getElementById('edit-id').value = button.dataset.id;
+            document.getElementById('edit-cell_number').value = button.dataset.cell_number;
+            document.getElementById('edit-capacity').value = button.dataset.capacity;
+        });
+    });
+
+    // Handle Edit Cell form submission
+    document.getElementById('editCellForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const id = document.getElementById('edit-id').value;
+        fetch(`/edit_cell/${id}`, { method: 'POST', body: new FormData(this) })
+            .then(res => res.json())
+            .then(data => {
+                if (data.message) {
+                    editModal.hide();
+                    showToast(data.message, 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showToast(data.error || 'Failed to update cell.', 'danger');
+                }
+            });
+    });
+
+    // Handle showing the Delete Confirmation Modal
+    let cellIdToDelete = null;
+    document.querySelectorAll('.deleteBtn').forEach(button => {
+        button.addEventListener('click', () => {
+            cellIdToDelete = button.dataset.id;
+            document.getElementById('cellNameToDelete').textContent = button.dataset.cell_number;
+            deleteModal.show();
+        });
+    });
+
+    // Handle the actual deletion
+    document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+        if (!cellIdToDelete) return;
+        
+        fetch(`/delete_cell/${cellIdToDelete}`, { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.message) {
+                    deleteModal.hide();
+                    showToast(data.message, 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showToast(data.error || 'Failed to delete cell.', 'danger');
+                }
+            });
+    });
+});
+</script>
+{% endblock %}
