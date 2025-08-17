@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Punishment Records</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#addPunishmentModal">
+            <i class="fas fa-gavel me-2"></i>Add New Punishment
+        </button>
+    </div>
+</div>
+
+<div class="card bg-dark border-secondary">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Inmate Name</th>
+                        <th>Punishment Detail</th>
+                        <th>Date Given</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in punishments %}
+                    <tr>
+                        <td>{{ p.inmate_name }}</td>
+                        <td>{{ p.punishment_detail }}</td>
+                        <td>{{ p.date_given.strftime('%Y-%m-%d') }}</td>
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-outline-warning editBtn"
+                                    data-id="{{ p.id }}"
+                                    data-inmate-id="{{ p.inmate_id }}"
+                                    data-detail="{{ p.punishment_detail }}"
+                                    data-date="{{ p.date_given.strftime('%Y-%m-%d') }}"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#editPunishmentModal">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger deleteBtn"
+                                    data-id="{{ p.id }}"
+                                    data-name="{{ p.inmate_name }}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add Punishment Modal -->
+<div class="modal fade" id="addPunishmentModal" tabindex="-1" aria-labelledby="addPunishmentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form id="addPunishmentForm" class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addPunishmentModalLabel">Add Punishment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="add-inmate_id" class="form-label">Inmate</label>
+                    <select id="add-inmate_id" name="inmate_id" class="form-select" required>
+                        <option value="" selected disabled>Select an inmate...</option>
+                        {% for inmate in inmates %}
+                        <option value="{{ inmate.id }}">{{ inmate.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="add-punishment_detail" class="form-label">Punishment Details</label>
+                    <textarea id="add-punishment_detail" name="punishment_detail" class="form-control" rows="3" required></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="add-date_given" class="form-label">Date Given</label>
+                    <input id="add-date_given" name="date_given" type="date" class="form-control" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary">Add Record</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Punishment Modal -->
+<div class="modal fade" id="editPunishmentModal" tabindex="-1" aria-labelledby="editPunishmentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form id="editPunishmentForm" class="modal-content">
+            <input type="hidden" name="id">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editPunishmentModalLabel">Edit Punishment Record</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="edit-inmate_id" class="form-label">Inmate</label>
+                    <select id="edit-inmate_id" name="inmate_id" class="form-select" required>
+                        {% for inmate in inmates %}
+                        <option value="{{ inmate.id }}">{{ inmate.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="edit-punishment_detail" class="form-label">Punishment Details</label>
+                    <textarea id="edit-punishment_detail" name="punishment_detail" class="form-control" rows="3" required></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="edit-date_given" class="form-label">Date Given</label>
+                    <input id="edit-date_given" name="date_given" type="date" class="form-control" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteConfirmModalLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete the punishment record for <strong id="inmateNameToDelete"></strong>? This action cannot be undone.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete Record</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const addModal = new bootstrap.Modal(document.getElementById('addPunishmentModal'));
+    const editModal = new bootstrap.Modal(document.getElementById('editPunishmentModal'));
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+
+    // Handle Add Punishment
+    document.getElementById('addPunishmentForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        fetch('/add_punishment', { method: 'POST', body: new FormData(this) })
+            .then(res => res.json())
+            .then(data => {
+                if (data.message) {
+                    addModal.hide();
+                    showToast(data.message, 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showToast(data.error || 'Failed to add record.', 'danger');
+                }
+            });
+    });
+
+    // Handle populating the Edit Modal
+    document.querySelectorAll('.editBtn').forEach(button => {
+        button.addEventListener('click', () => {
+            const form = document.getElementById('editPunishmentForm');
+            form.id.value = button.dataset.id;
+            form.inmate_id.value = button.dataset.inmateId;
+            form.punishment_detail.value = button.dataset.detail;
+            form.date_given.value = button.dataset.date;
+        });
+    });
+
+    // Handle Edit Punishment form submission
+    document.getElementById('editPunishmentForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const id = this.id.value;
+        fetch(`/edit_punishment/${id}`, { method: 'POST', body: new FormData(this) })
+            .then(res => res.json())
+            .then(data => {
+                if (data.message) {
+                    editModal.hide();
+                    showToast(data.message, 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showToast(data.error || 'Failed to update record.', 'danger');
+                }
+            });
+    });
+
+    // Handle showing the Delete Confirmation Modal
+    let punishmentIdToDelete = null;
+    document.querySelectorAll('.deleteBtn').forEach(button => {
+        button.addEventListener('click', () => {
+            punishmentIdToDelete = button.dataset.id;
+            document.getElementById('inmateNameToDelete').textContent = button.dataset.name;
+            deleteModal.show();
+        });
+    });
+
+    // Handle the actual deletion
+    document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+        if (!punishmentIdToDelete) return;
+        
+        fetch(`/delete_punishment/${punishmentIdToDelete}`, { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.message) {
+                    deleteModal.hide();
+                    showToast(data.message, 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showToast(data.error || 'Failed to delete record.', 'danger');
+                }
+            });
+    });
+});
+</script>
+{% endblock %}
