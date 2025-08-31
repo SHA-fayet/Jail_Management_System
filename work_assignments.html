@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Work Assignments</h1>
+
+</div>
+
+<div class="row g-4">
+    <!-- Assignment Form -->
+    <div class="col-lg-4">
+        <div class="card bg-dark border-secondary">
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="fas fa-edit me-2"></i>Assign Work</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('work_assignments.add_work_assignment') }}" method="POST">
+                    <div class="mb-3">
+                        <label for="inmate_id" class="form-label">Inmate</label>
+                        <select id="inmate_id" name="inmate_id" class="form-select" required>
+                            <option value="" selected disabled>Select an inmate...</option>
+                            {% for inmate in inmates %}
+                                <option value="{{ inmate.id }}">{{ inmate.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="work_detail" class="form-label">Work Detail</label>
+                        <textarea id="work_detail" name="work_detail" class="form-control" rows="3" placeholder="e.g., Kitchen duty, Laundry service..." required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="supervisor" class="form-label">Supervisor</label>
+                        <input type="text" id="supervisor" name="supervisor" class="form-control" placeholder="Supervisor's name (optional)">
+                    </div>
+                    <div class="mb-3">
+                        <label for="assigned_date" class="form-label">Assigned Date</label>
+                        <input type="date" id="assigned_date" name="assigned_date" class="form-control" required>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Assign Work</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assignment History Table -->
+    <div class="col-lg-8">
+        <div class="card bg-dark border-secondary">
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="fas fa-history me-2"></i>Assignment Roster</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Inmate</th>
+                                <th>Assignment</th>
+                                <th>Status</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for a in assignments %}
+                            <tr>
+                                <td>{{ a.inmate_name }}</td>
+                                <td>{{ a.assignment }}</td>
+                                <td>
+                                    {% if a.status == 'Completed' %}
+                                        <span class="badge bg-success">{{ a.status }}</span>
+                                    {% elif a.status == 'In Progress' %}
+                                        <span class="badge bg-info">{{ a.status }}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ a.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-warning editBtn" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#editStatusModal"
+                                            data-id="{{ a.id }}"
+                                            data-status="{{ a.status }}"
+                                            data-completion-date="{{ a.completion_date or '' }}">
+                                        <i class="fas fa-check-square"></i> Update
+                                    </button>
+                                    <a href="{{ url_for('work_assignments.delete_work_assignment', id=a.id) }}"
+                                       onclick="return confirm('Are you sure you want to delete this assignment?')"
+                                       class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-5">
+                                    <h4>No Work Assignments</h4>
+                                    <p class="mb-0">No work has been assigned yet.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Status Modal -->
+<div class="modal fade" id="editStatusModal" tabindex="-1" aria-labelledby="editStatusModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form id="editStatusForm" method="POST">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editStatusModalLabel">Update Work Status</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="status" class="form-label">Status</label>
+                        <select name="status" id="edit-status" class="form-select" required>
+                            <option value="Assigned">Assigned</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="completion_date" class="form-label">Completion Date (if applicable)</label>
+                        <input type="date" name="completion_date" id="edit-completion-date" class="form-control">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-primary" type="submit">Update Status</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const editModal = new bootstrap.Modal(document.getElementById('editStatusModal'));
+    const editForm = document.getElementById('editStatusForm');
+    const editStatusSelect = document.getElementById('edit-status');
+    const editCompletionDate = document.getElementById('edit-completion-date');
+
+    document.querySelectorAll('.editBtn').forEach(button => {
+        button.addEventListener('click', () => {
+            const assignmentId = button.dataset.id;
+            const currentStatus = button.dataset.status;
+            const completionDate = button.dataset.completionDate;
+
+            // Set the form action dynamically
+            editForm.action = `/update_work_status/${assignmentId}`;
+            
+            // Populate the modal fields
+            editStatusSelect.value = currentStatus;
+            editCompletionDate.value = completionDate;
+        });
+    });
+});
+</script>
+{% endblock %}
