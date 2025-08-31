@@ -1,136 +1,149 @@
-Jail_Management_System
-Fully Advanced Jail Management System
-# JMS-Karagar
-Its a project about Jail Management System
+Jail Management System (JMS-Karagar)
+A fully advanced, feature-rich Jail Management System built with Flask and MySQL. This application provides a comprehensive suite of tools for administrators and jailers to manage inmates, visitors, cells, security, and daily operations within a correctional facility.
 
-🏗️ Project: Jail Management System (Flask + MySQL)
-✅ Core Technologies
+📋 Core Features
+JMS-Karagar is designed with a robust set of features to ensure efficient and secure management of a correctional facility.
+
+🔐 Authentication & Security
+Role-Based Access Control: Differentiated access levels for Admin and Jailer roles.
+
+Session-Based Authentication: Secure login system to protect sensitive data.
+
+Protected Routes: Unauthorized users are automatically redirected to the login page.
+
+📊 Interactive Dashboard
+At-a-Glance Analytics: Key metrics including total active inmates, released inmates, and today's visitor count.
+
+Upcoming Release Alerts: A dedicated section for inmates scheduled for release within the next 7 days.
+
+Visual Data Representation: A dynamic bar chart (using Chart.js) displaying monthly inmate admission trends.
+
+👮‍♂️ Inmate & Staff Management
+Full Inmate Lifecycle: Comprehensive CRUD (Create, Read, Update, Delete) operations for inmate records.
+
+Detailed Inmate Profiles: Fields include name, photo, crime, sentence details, admission/release dates, and cell assignments.
+
+Admin-Only User Creation: Administrators have exclusive rights to create and manage jailer accounts.
+
+🏢 Cell & Transfer Management
+Cell Monitoring: View all cells, their capacity, and current occupancy at a glance.
+
+Inmate Assignment: Easily assign or re-assign inmates to different cells.
+
+Complete Transfer History: Log and review every inmate transfer between cells, including reasons and dates.
+
+🧍‍♂️ Visitor & Request System
+Public-Facing Visit Request Form: An accessible portal for the public to request visits, which are then queued for approval.
+
+Request Management: Jailers and admins can approve or reject visitor requests.
+
+Visitor Logging: Maintain a complete history of all approved visits, linked to specific inmates.
+
+🚨 Alerts & Notifications
+Automated Alerts: System-generated alerts for critical events like upcoming releases and severe behavioral incidents.
+
+Internal Notification System: Staff receive notifications for new visit requests and other important updates.
+
+⚖️ Punishments & Behavior
+Disciplinary Records: Log and manage punishment records for inmates, including details and dates.
+
+🔍 Advanced Search
+Faceted Search: A powerful search module to filter inmates by name, crime, status (Active/Released), cell number, or a date range for release.
+
+🛠️ Technology Stack
 Backend: Flask (Python)
 
 Database: MySQL
-Frontend: HTML, CSS, Bootstrap
-Authentication: Session-based
-Theme: Dark/jail vibes (styled with custom CSS)
 
-🔐 Authentication and Roles
-Session-based login system
-Roles: admin, jailer
-Unauthorized users are redirected to login
+Frontend: HTML, CSS, JavaScript, Bootstrap 5
 
-📊 Dashboard (Fully Implemented)
-Total active inmates count
-Total released inmates count
-Today's visitor count
-Upcoming releases within 7 days
-Chart: Monthly admissions (admission_date group by month)
+Charting: Chart.js
 
-👮‍♂️ User Management
-Only admin can create users (jailers)
-Fields: username, password, role
-Login/logout system
+📂 Project Structure
+The project follows a modular structure to keep the code organized and maintainable.
 
-🔒 Inmate Management
-Add, view, edit, delete inmates
-Fields include:
-name, gender, age, admission_date, release_date, status, crime_details, cell_id
-Status: Active / Released
-Assignment to cells
-Linked with transfers, punishments
-
-🧍‍♂️ Visitor Management
-Track each visit to an inmate
-Fields: visitor_name, inmate_id, visit_date, relation
-View all visitors
-Daily visitor count used in dashboard
-
-📆 Visitor Request System (Public Access)
-Public-facing form: anyone can apply for a visit
-Fields: visitor_name, inmate_name, visit_date, reason
-Stored in visit_requests table
-Visible to jailers/admins
-Option to approve/reject requests
-
-🧳 Inmate Transfer History
-Track cell transfers of inmates
-Fields: inmate_id, from_cell_id, to_cell_id, transfer_date, reason
-View history per inmate
-
-🧨 Punishment Management
-Add punishment records for inmates
-Fields: inmate_id, punishment_type, description, date_given, duration_days
-View history
-
-🚨 Upcoming Release Alerts
-Alerts for inmates releasing within next 7 days
-Shown on dashboard
-Stored in alerts table optionally
-
-🔔 Notifications System
-Internal notifications for:
-New visitor requests
-Upcoming releases
-Any critical system status
-Only visible to jailer/admin after login
-
-🧠 Advanced Inmate Search
-Search inmates by:
-Name
-Crime
-Status (active/released)
-Cell number
-Release date range
-
-📈 Dashboard Charts
-Monthly inmate admissions (bar chart using Chart.js)
-Data pulled from admission_date
-
-🏢 Cell Management
-View all cells and capacity
-Assign inmates to cells
-Track which cell is assigned to which inmate
-
-🔧 Tables Used (Summary)
-*users (id, username, password, role)
-*inmates (name, admission_date, release_date, status, cell_id, crime)
-*visitors (inmate_id, visitor_name, visit_date)
-*visit_requests (public)
-*transfers (inmate_id, from_cell, to_cell, transfer_date)
-*punishments (inmate_id, punishment_type, duration)
-*cells (id, capacity, status)
-*alerts, notifications (optional/derived)
-
-**THE STRUCTURE**
-
-project/
-├── run.py
+JMS_Project/
 ├── app/
-│   ├── __init__.py
-│   ├── config.py
 │   ├── models/
 │   │   └── db_schema.sql
 │   ├── routes/
+│   │   ├── alerts.py
 │   │   ├── auth.py
+│   │   ├── cells.py
 │   │   ├── dashboard.py
 │   │   ├── inmates.py
-│   │   ├── visitors.py
-│   │   ├── punishments.py
-│   │   ├── transfers.py
 │   │   ├── notifications.py
-│   │   ├── cells.py
+│   │   ├── punishments.py
 │   │   ├── search.py
-│   │   └── visit_request.py
-│   ├── templates/
-│   │   ├── base.html
-│   │   ├── login.html
-│   │   ├── dashboard.html
-│   │   ├── inmates.html
-│   │   ├── visitors.html
-│   │   ├── punishments.html
-│   │   ├── transfers.html
-│   │   ├── notifications.html
-│   │   ├── cells.html
-│   │   ├── search.html
-│   │   └── visit_request_form.html
-│   └── static/
-│       └── css/
-│           └── style.css
+│   │   ├── transfers.py
+│   │   ├── visit_request.py
+│   │   ├── visitors.py
+│   │   └── work_assignments.py
+│   ├── static/
+│   │   └── ... (css, images, etc.)
+│   └── templates/
+│       ├── base.html
+│       ├── login.html
+│       ├── dashboard.html
+│       └── ... (all other HTML files)
+├── venv/
+├── __init__.py          # Initializes the Flask app and its extensions
+├── config.py            # Configuration settings (database URI, secret key)
+├── run.py               # Main entry point to start the application
+└── jms.env              # Environment variables
+
+🚀 Getting Started
+Follow these instructions to set up and run the project on your local machine.
+
+Prerequisites
+Python 3.10+
+
+MySQL Server
+
+Git
+
+Installation & Setup
+Clone the repository:
+
+git clone [https://github.com/your-username/JMS-Karagar.git](https://github.com/SHA-fayet/JMS-Karagar.git)
+cd JMS-Karagar
+
+Create and activate a virtual environment:
+
+# For Windows
+python -m venv venv
+.\venv\Scripts\activate
+
+# For macOS/Linux
+python3 -m venv venv
+source venv/bin/activate
+
+Install the required packages:
+
+pip install -r requirements.txt
+
+(Note: You will need to create a requirements.txt file by running pip freeze > requirements.txt)
+
+Set up the database:
+
+Open your MySQL client (e.g., phpMyAdmin, MySQL Workbench).
+
+Create a new database named jms.
+
+Import the provided schema from app/models/db_schema.sql into the jms database.
+
+Configure environment variables:
+
+Rename the jms.env file to .env.
+
+Add/update your database credentials and a secret key in this file:
+
+SECRET_KEY='a_very_strong_and_random_secret_key'
+MYSQL_HOST='localhost'
+MYSQL_USER='your_mysql_username'
+MYSQL_PASSWORD='your_mysql_password'
+MYSQL_DB='jms'
+
+Run the application:
+
+flask run
